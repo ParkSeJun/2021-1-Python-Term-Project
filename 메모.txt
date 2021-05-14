@@ -1,0 +1,14 @@
+https://www.dhlottery.co.kr/common.do?method=getLottoNumber&drwNo=903
+{"totSellamnt":88625160000,"returnValue":"success","drwNoDate":"2020-03-21","firstWinamnt":1684582212,"drwtNo6":28,"drwtNo4":21,"firstPrzwnerCo":13,"drwtNo5":22,"bnusNo":45,"firstAccumamnt":21899568756,"drwNo":903,"drwtNo2":15,"drwtNo3":16,"drwtNo1":2}
+
+
+returnValue == 'success' 성공유무
+
+drwNoDate : "2020-03-21" 추첨날짜
+firstWinamnt : 1684582212 1등의 1게임당 당첨금액
+
+drwtNo1 : 2 첫번째볼
+drwtNo6 : 28 6번째볼
+drwNo : 903 903회차
+firstPrzwnerCo : 13 1등 당첨게임 수
+bnusNo : 45 보너스볼 
