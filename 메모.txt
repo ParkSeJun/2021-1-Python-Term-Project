@@ -12,3 +12,9 @@ drwtNo6 : 28 6번째볼
 drwNo : 903 903회차
 firstPrzwnerCo : 13 1등 당첨게임 수
 bnusNo : 45 보너스볼 
+
+
+회차의 당첨금액 등 테이블 얻어오기
+POST https://www.dhlottery.co.kr/gameResult.do?method=byWin
+Content-Type: application/x-www-form-urlencoded
+drwNo=960&dwrNoList=960
