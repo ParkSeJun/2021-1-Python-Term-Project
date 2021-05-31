@@ -10,9 +10,7 @@ class MainGUI:
         self.window = Tk()
         self.window.title('대박인생')
         self.window.geometry('600x600')
-        self.big_font = font.Font(size=20)
-        self.ball_num_font = font.Font(size=27)
-        self.bonus_ball_num_font = font.Font(size=int(27*1.25))
+        self.fonts = dict()
 
         self.MakeGui()
 
@@ -39,14 +37,14 @@ class MainGUI:
 
         recent_round = dhlotto.get_recent_round()
         rounds = [x for x in range(recent_round, 0, -1)]
-        self.frame1_round = tkinter.ttk.Combobox(frame1_top_left, width=8, justify='center', font=self.big_font, values=rounds)
+        self.frame1_round = tkinter.ttk.Combobox(frame1_top_left, width=8, justify='center', font=self.get_font(20), values=rounds)
         self.frame1_round.pack(expand=True)
         self.frame1_round.current(0)
 
         ### 상단 우측: 조회 버튼
         frame1_top_right = Frame(frame1_top)
         frame1_top_right.pack(side='right', expand=True, fill='both')
-        Button(frame1_top_right, text='조회', font=self.big_font, width=10, command=self.onpress_frame1_query).pack(expand=True)
+        Button(frame1_top_right, text='조회', font=self.get_font(20), width=10, command=self.onpress_frame1_query).pack(expand=True)
 
         
         ## 중단: 당첨번호 출력 Canvas
@@ -84,6 +82,28 @@ class MainGUI:
         frame2 = Frame(self.window)
         notebook.add(frame2, text='내 번호 확인')
 
+        ## 상단: 번호 기입란
+        frame2_top = Frame(frame2)
+        frame2_top.pack(expand=True, fill='both')
+
+        self.frame2_numbers = []
+        for i in range(5):
+            t_frame = Frame(frame2_top)
+            t_frame.pack(expand=True, fill='both')
+            Label(t_frame, text='{0}.'.format(i+1), font=self.get_font(15)).pack(side='left', expand=True, fill='both')
+            self.frame2_numbers.append([Entry(t_frame, width=3, font=self.get_font(15)) for _ in range(6)])
+            for x in self.frame2_numbers[i]:
+                x.pack(side='left', expand=True, fill='both', padx=[0,15], pady=[10,10])
+
+        frame2_middle = Frame(frame2)
+        frame2_middle.pack(expand=True, fill='both')
+
+
+
+        frame2_bottom = Frame(frame2)
+        frame2_bottom.pack(expand=True, fill='both')
+
+
         # 3페이지: 판매점 찾기
         frame3 = Frame(self.window)
         notebook.add(frame3, text='판매점 찾기')
@@ -95,6 +115,16 @@ class MainGUI:
         # 5페이지: 번호 별 통계
         frame5 = Frame(self.window)
         notebook.add(frame5, text='번호 별 통계')
+
+
+
+    # 폰트 얻어오기
+    def get_font(self, font_size, is_bold = False):
+        font_size = int(font_size)
+        if (font_size, is_bold) not in self.fonts:
+            self.fonts[(font_size, is_bold)] = font.Font(size=font_size, weight=('bold' if is_bold else 'normal'))
+        return self.fonts[(font_size, is_bold)]
+        
 
 
     def onpress_frame1_query(self):
@@ -110,7 +140,7 @@ class MainGUI:
         bg_default = '#f0f0f0'
 
         self.frame1_canvas.delete('*')
-        self.frame1_canvas.create_text(300, 10, text='{0}회차 ({1})'.format(lotto_data['round'], lotto_data['date']), tags='*', font=font.Font(size=13, weight='bold'))
+        self.frame1_canvas.create_text(300, 10, text='{0}회차 ({1})'.format(lotto_data['round'], lotto_data['date']), tags='*', font=self.get_font(13, is_bold=True))
 
         ## 공 6개
         for i in range(6):
@@ -119,7 +149,7 @@ class MainGUI:
             end_x = start_x + ball_size
             end_y = start_y + ball_size
             self.frame1_canvas.create_oval(start_x, start_y, end_x, end_y, fill=bg_colors[(lotto_data['numbers'][i]-1)//10], outline=bg_default, tags='*')
-            self.frame1_canvas.create_text(start_x + ball_size // 2, start_y + ball_size // 2, fill='white', text=lotto_data['numbers'][i], font=self.ball_num_font, tags='*')
+            self.frame1_canvas.create_text(start_x + ball_size // 2, start_y + ball_size // 2, fill='white', text=lotto_data['numbers'][i], font=self.get_font(27), tags='*')
 
         ## 보너스
         bonus_ball_size = int(ball_size * 1.25)
@@ -128,7 +158,7 @@ class MainGUI:
         end_x = 600//2 + bonus_ball_size//2
         end_y = start_y + bonus_ball_size
         self.frame1_canvas.create_oval(start_x, start_y, end_x, end_y, fill=bg_colors[(lotto_data['numbers'][6]-1)//10], outline=bg_default, tags='*')
-        self.frame1_canvas.create_text(start_x + bonus_ball_size // 2, start_y + bonus_ball_size // 2, fill='white', text=lotto_data['numbers'][6], font=self.bonus_ball_num_font, tags='*')
+        self.frame1_canvas.create_text(start_x + bonus_ball_size // 2, start_y + bonus_ball_size // 2, fill='white', text=lotto_data['numbers'][6], font=self.get_font(27 * 1.25), tags='*')
         self.frame1_canvas.create_text(start_x + bonus_ball_size // 2, start_y + bonus_ball_size + 15, text='보너스', font=font.Font(size=15, weight='bold'), tags='*')
 
         # Table 수정
