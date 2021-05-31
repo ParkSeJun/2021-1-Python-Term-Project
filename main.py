@@ -98,6 +98,10 @@ class MainGUI:
         frame2_middle = Frame(frame2)
         frame2_middle.pack(expand=True, fill='both')
 
+        frame2_middle = Frame(frame2)
+        frame2_middle.pack(side='right', expand=True, fill='both')
+        Button(frame2_middle, text='조회', font=self.get_font(20), width=10, command=self.onpress_frame1_query).pack(
+            expand=True) #좌표 함수 수정 필요
 
 
         frame2_bottom = Frame(frame2)
