@@ -122,6 +122,7 @@ class MainGUI:
 
 
 
+
     # 폰트 얻어오기
     def get_font(self, font_size, is_bold = False):
         font_size = int(font_size)
