@@ -91,9 +91,9 @@ class MainGUI:
             t_frame = Frame(frame2_top)
             t_frame.pack(expand=True, fill='both')
             Label(t_frame, text='{0}.'.format(i+1), font=self.get_font(15)).pack(side='left', expand=True, fill='both')
-            self.frame2_numbers.append([Entry(t_frame, width=3, font=self.get_font(15)) for _ in range(6)])
+            self.frame2_numbers.append([Entry(t_frame, width=7,  font=self.get_font(13), justify='center') for _ in range(6)])
             for x in self.frame2_numbers[i]:
-                x.pack(side='left', expand=True, fill='both', padx=[0,15], pady=[10,10])
+                x.pack(side='left', expand=True, ipady=10, pady=[0,0])
 
         frame2_middle = Frame(frame2)
         frame2_middle.pack(expand=True, fill='both')
