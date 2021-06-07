@@ -95,17 +95,32 @@ class MainGUI:
             for x in self.frame2_numbers[i]:
                 x.pack(side='left', expand=True, ipady=10, pady=[0,0])
 
+        ## 중단 : 조회 버튼
         frame2_middle = Frame(frame2)
         frame2_middle.pack(expand=True, fill='both')
+        Button(frame2_middle, text='조회', font=self.get_font(20), width=10, command=self.onpress_frame2_query).pack(expand=True, pady=[30, 30])
 
-        frame2_middle = Frame(frame2)
-        frame2_middle.pack(side='right', expand=True, fill='both')
-        Button(frame2_middle, text='조회', font=self.get_font(20), width=10, command=self.onpress_frame1_query).pack(
-            expand=True) #좌표 함수 수정 필요
-
-
+        ## 하단 : 조회 결과 표
         frame2_bottom = Frame(frame2)
         frame2_bottom.pack(expand=True, fill='both')
+
+        self.frame2_table_stringvars = []
+        widths = [6, 30, 15, 30]
+        height = 2
+        Label(frame2_bottom, text='번호', borderwidth=2, relief='ridge', width=widths[0], height=height).grid(row=0, column=0, padx=[2, 0])
+        Label(frame2_bottom, text='일치', borderwidth=2, relief='ridge', width=widths[1], height=height).grid(row=0, column=1)
+        Label(frame2_bottom, text='등수', borderwidth=2, relief='ridge', width=widths[2], height=height).grid(row=0, column=2)
+        Label(frame2_bottom, text='당첨 금액', borderwidth=2, relief='ridge', width=widths[3], height=height).grid(row=0, column=3)
+        for i in range(5):
+            t = [StringVar(), StringVar(), StringVar(), StringVar()]
+            for e in t:
+                e.set('-')
+            _pad_y = [0, 0 if i < 5 - 1 else 5]
+            Label(frame2_bottom, textvariable=t[0], borderwidth=2, relief='ridge', width=widths[0], height=height).grid(row=1 + i, column=0, pady=_pad_y, padx=[2, 0])
+            Label(frame2_bottom, textvariable=t[1], borderwidth=2, relief='ridge', width=widths[1], height=height).grid(row=1 + i, column=1, pady=_pad_y)
+            Label(frame2_bottom, textvariable=t[2], borderwidth=2, relief='ridge', width=widths[2], height=height).grid(row=1 + i, column=2, pady=_pad_y)
+            Label(frame2_bottom, textvariable=t[3], anchor='e', borderwidth=2, relief='ridge', width=widths[3], height=height).grid(row=1 + i, column=3, pady=_pad_y)
+            self.frame2_table_stringvars.append(t)
 
 
         # 3페이지: 판매점 찾기
@@ -171,6 +186,10 @@ class MainGUI:
         for i in range(5):
             for j in range(4):
                 self.frame1_table_stringvars[i][j].set(lotto_prizes[i][j])
+
+
+    def onpress_frame2_query(self):
+        pass
 
         
 MainGUI()
