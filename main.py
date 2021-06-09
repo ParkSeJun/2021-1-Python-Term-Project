@@ -8,6 +8,8 @@ import threading
 from cefpython3 import cefpython as cef
 import folium
 import sys
+import smtplib
+from email.mime.text import MIMEText
 
 class InputBox:
     answer = None
@@ -419,6 +421,27 @@ class MainGUI:
 
     def onpress_frame3_share(self):
         InputBox().show('E-mail 입력:')
+        # 세션 생성
+        s = smtplib.SMTP('smtp.gmail.com', 587)
+        # TLS 보안 시작
+        s.starttls()
+
+        id = 'test.project.lotto@gmail.com'
+        password = 'qhrrnjsqht!139'
+
+        # 로그인 인증
+        s.login(id, password)
+
+
+        # 보낼 메시지 설정
+        msg = MIMEText('지점명 : {0}\n전화번호 : {1}\n'.format(self.frame3_store_data[self.frame3_current_page - 1]['name'], self.frame3_store_data[self.frame3_current_page - 1]['tel']) )
+        msg['Subject'] = '{0} {1} {2}번째 복권 판매점 조회'.format(self.frame3_city1.get(), self.frame3_city2.get(), self.frame3_current_page)
+
+        # 메일 보내기
+        s.sendmail(id, id, msg.as_string())
+
+        # 세션 종료
+        s.quit()
 
     def opress_frame3_prev(self):
         if not self.frame3_store_data:
