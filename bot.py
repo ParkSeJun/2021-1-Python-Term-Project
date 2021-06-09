@@ -12,10 +12,7 @@ bot = telepot.Bot(TOKEN)
 chat_id = 1574057894
 baseURL = 'https://dhlottery.co.kr/gameResult.do?method=byWin&drwNo='
 
-#data = requests.get(baseURL +)
-#soup = BeautifulSoup(data.text, 'html.parser')
-#numberData = soup.find('meta', id='desc')['content']
-#print(numberData)
+global data, soup, numberData
 
 
 def handle(msg):
@@ -29,6 +26,18 @@ def handle(msg):
 
     if text.startswith('회차') and len(args)>1:
         print('try to 회차', args[1])
+        data = requests.get(baseURL + args[1])
+        soup = BeautifulSoup(data.text, 'html.parser')
+        numberData = soup.find('meta', id='desc')['content']
+        result = numberData.replace(" 당첨번호 ", "\n")
+        result = result.replace("+", "\n2등 보너스: ")
+        result = result.replace(". ", ".\n")
+        result = result.replace(", 1인당 당첨금액 ", ", 각 ")
+        if ',,,,,' in result:
+            result = str(args[1]) + '회차는 아직 확인되지 않았습니다.'
+            return False, sendMessage(chat_id, result)
+        sendMessage(chat_id, result)
+        print(numberData)
 
     else:
         sendMessage(chat_id, '모르는 명령어입니다.\n지역 [지역번호], 저장 [지역번호], 확인 중 하나의 명령을 입력하세요.')
@@ -39,6 +48,9 @@ def sendMessage(user, msg):
         bot.sendMessage(user, msg)
     except:
         traceback.print_exc(file=sys.stdout)
+
+
+
 
 bot = telepot.Bot(TOKEN)
 pprint( bot.getMe() )
