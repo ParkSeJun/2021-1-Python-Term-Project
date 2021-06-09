@@ -31,7 +31,7 @@ def handle(msg):
         data = requests.get(baseURL + args[1])
         soup = BeautifulSoup(data.text, 'html.parser')
         numberData = soup.find('meta', id='desc')['content']
-        result = numberData.replace(" 당첨번호 ", "\n")
+        result = numberData.replace(" 당첨번호 ", "\n당첨번호: ")
         result = result.replace("+", "\n2등 보너스: ")
         result = result.replace(". ", ".\n")
         result = result.replace(", 1인당 당첨금액 ", ", 각 ")
