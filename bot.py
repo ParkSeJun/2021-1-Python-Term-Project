@@ -48,7 +48,7 @@ def handle(msg):
         num = str(args[1])
         if(num.isdigit() == False):
             return False, sendMessage(chat_id, '숫자로만 입력해주세요')
-        
+
         res = '\n'
         if int(args[1]) > 5:
             return False, sendMessage(chat_id, '복권번호는 최대 5개까지 생성 가능합니다')
@@ -67,7 +67,7 @@ def handle(msg):
         sendMessage(chat_id, '회차 [회차번호]\n복권생성 [개수(최대 5)]')
 
     else:
-        sendMessage(chat_id, '모르는 명령어입니다.\n회차 [회차번호], 번호생성 [개수(최대 5)], 확인 중 하나의 명령을 입력하세요.')
+        sendMessage(chat_id, '모르는 명령어입니다.\n회차 [회차번호], 번호생성 [개수(최대 5)] 중 하나의 명령을 입력하세요.')
 
 
 def sendMessage(user, msg):
