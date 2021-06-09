@@ -7,6 +7,9 @@ class dhlotto:
     __get_recent_round_exp = re.compile(r'<option value="(\d+)" selected>\d+</option>')
     __get_lotto_prize_exp = re.compile(r'')
 
+    __get_lotto_number_cache = dict() # 한번 load한 로또번호는 저장 ( ...[915] = [5, 12, 15, 23, 24, 36, 40] # 915회차 [0]~[5]: 당첨번호, [6]: 보너스)
+    __get_lotto_prize_cache = dict() # 한번 load한 당첨금 정보를 저장 ( ...[915] = [55555, 4444, 333, 22, 1] # 915회차 1등상금 55555원, 5등 상금 1원
+
     def get_recent_round():
         try:
             response = requests.get('https://www.dhlottery.co.kr/gameResult.do?method=byWin')

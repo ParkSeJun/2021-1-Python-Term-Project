@@ -4,6 +4,9 @@ from tkinter import font
 import tkinter.ttk
 from dhlotto import *
 import random
+import threading
+from cefpython3 import cefpython as cef
+import folium
 
 class MainGUI:
 
@@ -11,6 +14,8 @@ class MainGUI:
         self.window = Tk()
         self.window.title('대박인생')
         self.window.geometry('600x600')
+        self.window.protocol('WM_DELETE_WINDOW', lambda : self.window.destroy())
+        self.window.resizable(0, 0)
         self.fonts = dict()
 
         self.MakeGui()
@@ -89,7 +94,7 @@ class MainGUI:
 
         ## 상단: 번호 기입란
         frame2_top = Frame(frame2)
-        frame2_top.pack(expand=True, fill='both', padx=[20,20])
+        frame2_top.pack(expand=True, fill='both', padx=[20,20], pady=[10, 0])
 
         self.frame2_numbers = []
         for i in range(5):
@@ -146,6 +151,30 @@ class MainGUI:
         # 3페이지: 판매점 찾기
         frame3 = Frame(self.window)
         notebook.add(frame3, text='판매점 찾기')
+
+        frame3_top = Frame(frame3)
+        frame3_top.pack(expand=True, fill='both')
+
+        frame3_top_left = Frame(frame3_top)
+        frame3_top_left.pack(expand=True, fill='both')
+
+        frame3_top_left_top = Frame(frame3_top_left)
+        frame3_top_left_top.pack(expand=True, fill='both')
+
+        frame3_top_left_bottom = Frame(frame3_top_left)
+        frame3_top_left_bottom.pack(expand=True, fill='both')
+
+        frame3_top_right = Frame(frame3_top)
+        frame3_top_right.pack(expand=True, fill='both')
+
+        frame3_bottom = Frame(frame3, bg='blue')
+        frame3_bottom.pack(expand=True, fill='both')
+
+        thread = threading.Thread(target=self.cef_thread, args=(frame3_bottom, [0, 0, 600, 200]))
+        thread.setDaemon(True)
+        thread.start()
+
+
 
         #########################################################################################################################
 
@@ -268,7 +297,13 @@ class MainGUI:
                 self.frame2_table_stringvars[i][2].set('1등')
                 self.frame2_table_stringvars[i][3].set(lotto_prize[0][3])
 
-
+    def cef_thread(self, *arg):
+        window_info = cef.WindowInfo(arg[0].winfo_id())
+        window_info.SetAsChild(arg[0].winfo_id(), arg[1])
+        cef.Initialize()
+        browser = cef.CreateBrowserSync(window_info, url='http://www.google.com')
+        # browser.ExecuteJavascript('alert(1);');
+        cef.MessageLoop()
 
 
         
