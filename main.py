@@ -3,6 +3,7 @@ from tkinter import *
 from tkinter import font
 import tkinter.ttk
 from dhlotto import *
+import random
 
 class MainGUI:
 
@@ -21,6 +22,9 @@ class MainGUI:
 
         notebook = tkinter.ttk.Notebook(self.window, width=600, height=600)
         notebook.pack(anchor='nw')
+
+
+        #########################################################################################################################
 
         # 1페이지: 추첨 결과 조회
         frame1 = Frame(self.window)
@@ -77,6 +81,7 @@ class MainGUI:
             Label(frame1_bottom, textvariable=t[3], anchor='e', borderwidth=2, relief='ridge', width=widths[3], height=height).grid(row=1 + i, column=3, pady=_pad_y)
             self.frame1_table_stringvars.append(t)
 
+        #########################################################################################################################
 
         # 2페이지: 내 번호 확인
         frame2 = Frame(self.window)
@@ -84,7 +89,7 @@ class MainGUI:
 
         ## 상단: 번호 기입란
         frame2_top = Frame(frame2)
-        frame2_top.pack(expand=True, fill='both')
+        frame2_top.pack(expand=True, fill='both', padx=[20,20])
 
         self.frame2_numbers = []
         for i in range(5):
@@ -93,12 +98,26 @@ class MainGUI:
             Label(t_frame, text='{0}.'.format(i+1), font=self.get_font(15)).pack(side='left', expand=True, fill='both')
             self.frame2_numbers.append([Entry(t_frame, width=7,  font=self.get_font(13), justify='center') for _ in range(6)])
             for x in self.frame2_numbers[i]:
-                x.pack(side='left', expand=True, ipady=10, pady=[0,0])
+                x.pack(side='left', expand=True, ipady=8, pady=[0,0])
 
         ## 중단 : 조회 버튼
         frame2_middle = Frame(frame2)
         frame2_middle.pack(expand=True, fill='both')
-        Button(frame2_middle, text='조회', font=self.get_font(20), width=10, command=self.onpress_frame2_query).pack(expand=True, pady=[30, 30])
+
+        ### 중단 좌측: 콤보박스
+        frame2_middle_left = Frame(frame2_middle)
+        frame2_middle_left.pack(side='left', expand=True, fill='both')
+
+        # recent_round = dhlotto.get_recent_round()
+        rounds = [x for x in range(recent_round, 0, -1)]
+        self.frame2_round = tkinter.ttk.Combobox(frame2_middle_left, width=8, justify='center', font=self.get_font(20), values=rounds)
+        self.frame2_round.pack(expand=True, pady=[30, 55])
+        self.frame2_round.current(0)
+
+        ### 중단 우측: 조회 버튼
+        frame2_middle_right = Frame(frame2_middle)
+        frame2_middle_right.pack(side='right', expand=True, fill='both')
+        Button(frame2_middle_right, text='조회', font=self.get_font(20), width=10, command=self.onpress_frame2_query).pack(expand=True, pady=[30, 55])
 
         ## 하단 : 조회 결과 표
         frame2_bottom = Frame(frame2)
@@ -122,19 +141,25 @@ class MainGUI:
             Label(frame2_bottom, textvariable=t[3], anchor='e', borderwidth=2, relief='ridge', width=widths[3], height=height).grid(row=1 + i, column=3, pady=_pad_y)
             self.frame2_table_stringvars.append(t)
 
+        #########################################################################################################################
 
         # 3페이지: 판매점 찾기
         frame3 = Frame(self.window)
         notebook.add(frame3, text='판매점 찾기')
 
+        #########################################################################################################################
+
         # 4페이지: 시뮬레이션
         frame4 = Frame(self.window)
         notebook.add(frame4, text='시뮬레이션')
+
+        #########################################################################################################################
 
         # 5페이지: 번호 별 통계
         frame5 = Frame(self.window)
         notebook.add(frame5, text='번호 별 통계')
 
+        #########################################################################################################################
 
 
 
@@ -189,7 +214,62 @@ class MainGUI:
 
 
     def onpress_frame2_query(self):
-        pass
+
+        def is_validate(lst): # 공백이 없는 멀쩡한 리스트인지 체크해주는 함수
+            for x in lst:
+                if not x:
+                    return False
+            return True
+
+        cur_round = eval(self.frame1_round.get())
+        lotto_data = dhlotto.get_lotto_result(cur_round)
+        lotto_prize = dhlotto.get_lotto_prize(cur_round)
+
+        numbers = lotto_data['numbers'][0:6] # 보너스번호 제외 당첨번호들
+        bonus_num = lotto_data['numbers'][6]
+
+        for i in range(5):
+            self.frame2_table_stringvars[i][0].set(i+1) # 표의 '번호' 설정
+            try:
+                picks = [eval(self.frame2_numbers[i][idx].get()) for idx in range(6)] # 내 번호들
+            except Exception as e:
+                self.frame2_table_stringvars[i][1].set('-') # 일치
+                self.frame2_table_stringvars[i][2].set('-') # 등수
+                self.frame2_table_stringvars[i][3].set('-') # 당첨 금액
+                continue
+
+            # Validate 체크
+            if not is_validate(picks):
+                self.frame2_table_stringvars[i][1].set('-') # 일치
+                self.frame2_table_stringvars[i][2].set('-') # 등수
+                self.frame2_table_stringvars[i][3].set('-') # 당첨 금액
+                continue
+
+            pick_str_list = list(map(lambda x : '[{0}]'.format(x) if x in numbers else ('보너스({0})'.format(x) if x == bonus_num else str(x)), picks))
+            self.frame2_table_stringvars[i][1].set(' '.join(pick_str_list))
+
+            hit_count = len(list(filter(lambda x : x in numbers, picks)))
+            if hit_count < 3: # 미당첨
+                self.frame2_table_stringvars[i][2].set('X')
+                self.frame2_table_stringvars[i][3].set('0 원')
+            elif hit_count == 3: # 5등
+                self.frame2_table_stringvars[i][2].set('5등')
+                self.frame2_table_stringvars[i][3].set(lotto_prize[4][3])
+            elif hit_count == 4: # 4등
+                self.frame2_table_stringvars[i][2].set('4등')
+                self.frame2_table_stringvars[i][3].set(lotto_prize[3][3])
+            elif hit_count == 5: # 3등/2등
+                if bonus_num not in picks:
+                    self.frame2_table_stringvars[i][2].set('3등')
+                    self.frame2_table_stringvars[i][3].set(lotto_prize[2][3])
+                self.frame2_table_stringvars[i][2].set('2등')
+                self.frame2_table_stringvars[i][3].set(lotto_prize[1][3])
+            elif hit_count == 6: # 1등
+                self.frame2_table_stringvars[i][2].set('1등')
+                self.frame2_table_stringvars[i][3].set(lotto_prize[0][3])
+
+
+
 
         
 MainGUI()
