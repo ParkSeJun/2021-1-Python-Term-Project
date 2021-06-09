@@ -438,7 +438,7 @@ class MainGUI:
         msg['Subject'] = '{0} {1} {2}번째 복권 판매점 조회'.format(self.frame3_city1.get(), self.frame3_city2.get(), self.frame3_current_page)
 
         # 메일 보내기
-        s.sendmail(id, id, msg.as_string())
+        s.sendmail(id, InputBox().answer, msg.as_string())
 
         # 세션 종료
         s.quit()
