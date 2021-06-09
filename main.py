@@ -7,9 +7,52 @@ import random
 import threading
 from cefpython3 import cefpython as cef
 import folium
+import sys
+
+class InputBox:
+    answer = None
+    answered = False
+
+    def __init__(self):
+        pass
+
+    def on_close(self):
+        InputBox.answer = 'cancel'
+        InputBox.answered = True
+        self.root.destroy()
+        self.root.quit()
+
+    def commit(self):
+        InputBox.answer = self.entry1.get()
+        InputBox.answered = True
+        self.root.destroy()
+        self.root.quit()
+
+    def show(self, label):
+        InputBox.answered = False
+        InputBox.answer = None
+
+        # creating root
+        self.root = Tk()
+        
+        # specifying geometry
+        self.root.geometry('200x100')
+        self.root.protocol('WM_DELETE_WINDOW', self.on_close)
+        
+        Label(self.root, text=label).pack()
+        self.entry1 = Entry(self.root, justify = CENTER)
+        
+        # focus_force is used to take focus
+        # as soon as application starts
+        self.entry1.focus_force()
+        self.entry1.pack(side = TOP, ipadx = 30, ipady = 6)
+        
+        save = Button(self.root, text = 'Submit', command = self.commit)
+        save.pack(side = TOP, pady = 10)
+        
+        self.root.mainloop()
 
 class MainGUI:
-
     def __init__(self):
         self.window = Tk()
         self.window.title('대박인생')
@@ -17,6 +60,7 @@ class MainGUI:
         self.window.protocol('WM_DELETE_WINDOW', lambda : self.window.destroy())
         self.window.resizable(0, 0)
         self.fonts = dict()
+        self.frame3_store_data = None
 
         self.MakeGui()
 
@@ -156,37 +200,98 @@ class MainGUI:
         frame3_top.pack(expand=True, fill='both')
 
         frame3_top_left = Frame(frame3_top)
-        frame3_top_left.pack(expand=True, fill='both')
+        frame3_top_left.pack(expand=True, fill='both', side='left')
+
+        
 
         frame3_top_left_top = Frame(frame3_top_left)
-        frame3_top_left_top.pack(expand=True, fill='both')
+        frame3_top_left_top.pack(expand=True, fill='both', side='top')
+
+        Label(frame3_top_left_top, text='시/도', font=self.get_font(16, is_bold=True)).pack(side='top', anchor='sw', expand=True, fill='y', padx=[20, 0])
+        # city1 = ['서울', '경기', '부산', '대구', '인천', '대전', '울산', '강원', '충북', '충남', '광주', '전북', '전남', '경북', '경남', '제주', '세종']
+        city1 = ['서울']
+        self.frame3_city1 = tkinter.ttk.Combobox(frame3_top_left_top, width=8, justify='center', font=self.get_font(15, is_bold=True), values=city1)
+        self.frame3_city1.pack(expand=True, side='bottom', anchor='nw', padx=[20, 0])
+        self.frame3_city1.current(0)
+        self.frame3_city1.bind("<<ComboboxSelected>>", self.onvalidate_frame3_city1)
 
         frame3_top_left_bottom = Frame(frame3_top_left)
-        frame3_top_left_bottom.pack(expand=True, fill='both')
+        frame3_top_left_bottom.pack(expand=True, fill='both', side='bottom')
+
+        Label(frame3_top_left_bottom, text='구/군', font=self.get_font(16, is_bold=True)).pack(side='top', anchor='sw', expand=True, fill='y', padx=[20, 0], pady=[0, 0])
+        city2 = ['강남구', '강동구', '강북구', '강서구', '관악구', '광진구', '구로구', '금천구', '노원구', '도봉구', '동대문구', '동작구', '마포구', \
+            '서대문구', '서초구', '성동구', '성북구', '송파구', '양천구', '영등포구', '용산구', '은평구', '종로구', '중구', '중랑구']
+        self.frame3_city2 = tkinter.ttk.Combobox(frame3_top_left_bottom, width=8, justify='center', font=self.get_font(15, is_bold=True), values=city2)
+        self.frame3_city2.pack(expand=True, side='bottom', anchor='nw', padx=[20, 0])
+        self.frame3_city2.current(0)
 
         frame3_top_right = Frame(frame3_top)
-        frame3_top_right.pack(expand=True, fill='both')
+        frame3_top_right.pack(expand=True, fill='both', side='right')
 
-        frame3_bottom = Frame(frame3, bg='blue')
-        frame3_bottom.pack(expand=True, fill='both')
+        Button(frame3_top_right, text='조회', command=self.onpress_frame3_query, font=self.get_font(21, is_bold=True)).pack(expand=True, fill='both', padx=20, pady=20)
 
-        thread = threading.Thread(target=self.cef_thread, args=(frame3_bottom, [0, 0, 600, 200]))
+        ## 중상단: 지도
+        frame3_middle = Frame(frame3, bg='blue')
+        frame3_middle.pack(expand=True, fill='both', ipady=170)
+
+        thread = threading.Thread(target=self.cef_thread, args=(frame3_middle, [0, 0, 600, 350]))
         thread.setDaemon(True)
         thread.start()
 
 
+        ## 중하단: 상세정보 및 공유버튼
+        frame3_middle2 = Frame(frame3)
+        frame3_middle2.pack(expand=True, fill='both')
+
+        self.frame3_name = StringVar()
+        Label(frame3_middle2, textvariable=self.frame3_name, font=self.get_font(14, is_bold=True)).pack(expand=True)
+        self.frame3_name.set('-')
+        # self.frame3_name.set('더디씨 구파발로또 (02-1231-4535)')
+
+        self.frame3_share = Button(frame3_middle2, text='공유', command=self.onpress_frame3_share, font=self.get_font(12))
+        self.frame3_share.place(x=520, y=2)
+        self.frame3_share['state']= 'disable'
+
+        ## 하단: 페이지
+        frame3_bottom = Frame(frame3)
+        frame3_bottom.pack(expand=True, fill='both')
+
+        self.frame3_page = StringVar()
+        self.frame3_current_page = 1
+        Button(frame3_bottom, text='◀', font=self.get_font(15), command=self.opress_frame3_prev).pack(expand=True, side='left', anchor='e')
+        Label(frame3_bottom, textvariable=self.frame3_page, font=self.get_font(16)).pack(expand=True, side='left', anchor='center')
+        Button(frame3_bottom, text='▶', font=self.get_font(15), command=self.opress_frame3_next).pack(expand=True, side='left', anchor='w')
+        self.frame3_page.set('-/-')
+
 
         #########################################################################################################################
 
-        # 4페이지: 시뮬레이션
+        # 4페이지: 번호 별 통계
         frame4 = Frame(self.window)
-        notebook.add(frame4, text='시뮬레이션')
+        notebook.add(frame4, text='번호 별 통계')
 
-        #########################################################################################################################
+        self.frame4_canvas = Canvas(frame4, background='#f0f0f0', width=596, height=550)
+        self.frame4_canvas.pack(expand=True, fill='both')
 
-        # 5페이지: 번호 별 통계
-        frame5 = Frame(self.window)
-        notebook.add(frame5, text='번호 별 통계')
+        y = 500
+        sx = 10
+        ex = 590
+        self.frame4_canvas.create_line(sx, y, ex, y)
+        bar_width = (ex - sx) / 45
+
+        frequency = dhlotto.get_frequency()
+        max_val = max(frequency)
+        height_per_val = (y - 20) / max_val
+
+        bg_colors = ['#fbc400', '#69c8f2', '#ff7272', '#aaaaaa', '#b0d840']
+
+        for i in range(45):
+            rect_sx = sx + i * bar_width
+            rect_ex = sx + (i+1) * bar_width 
+            rect_sy = y
+            rect_ey = y - height_per_val * frequency[i]
+            self.frame4_canvas.create_rectangle(rect_sx, rect_sy, rect_ex, rect_ey, fill=bg_colors[i//10])
+            self.frame4_canvas.create_text(rect_sx+bar_width//2, rect_sy+10, text=i+1, font=self.get_font(8))
 
         #########################################################################################################################
 
@@ -198,8 +303,7 @@ class MainGUI:
         if (font_size, is_bold) not in self.fonts:
             self.fonts[(font_size, is_bold)] = font.Font(size=font_size, weight=('bold' if is_bold else 'normal'))
         return self.fonts[(font_size, is_bold)]
-        
-
+    
 
     def onpress_frame1_query(self):
         cur_round = eval(self.frame1_round.get())
@@ -240,7 +344,6 @@ class MainGUI:
         for i in range(5):
             for j in range(4):
                 self.frame1_table_stringvars[i][j].set(lotto_prizes[i][j])
-
 
     def onpress_frame2_query(self):
 
@@ -297,11 +400,69 @@ class MainGUI:
                 self.frame2_table_stringvars[i][2].set('1등')
                 self.frame2_table_stringvars[i][3].set(lotto_prize[0][3])
 
+    def onpress_frame3_query(self):
+        self.frame3_store_data = dhlotto.get_store(self.frame3_city1.get(), self.frame3_city2.get())
+        self.frame3_current_page = 1
+
+        self.frame3_name.set('{0} ({1})'.format(self.frame3_store_data[0]['name'], self.frame3_store_data[0]['tel']))
+        self.frame3_page.set('{0}/{1}'.format(self.frame3_current_page, len(self.frame3_store_data)))
+
+        self.frame3_share['state'] = 'normal'
+        # m = folium.Map(location=[37.3402849, 126.7313189], zoom_start=15)
+        m = folium.Map(location=[self.frame3_store_data[0]['lat'], self.frame3_store_data[0]['lon']], zoom_start=16)
+        
+        # 마커 지정
+        folium.Marker([self.frame3_store_data[0]['lat'], self.frame3_store_data[0]['lon']], popup=self.frame3_store_data[0]['name']).add_to(m)
+        # html 파일로 저장
+        m.save('map.html')
+        self.browser.Navigate('file:///map.html')
+
+    def onpress_frame3_share(self):
+        InputBox().show('E-mail 입력:')
+
+    def opress_frame3_prev(self):
+        if not self.frame3_store_data:
+            return
+        if self.frame3_current_page <= 1:
+            return
+        self.frame3_current_page -= 1
+
+        self.frame3_name.set('{0} ({1})'.format(self.frame3_store_data[self.frame3_current_page - 1]['name'], self.frame3_store_data[self.frame3_current_page - 1]['tel']))
+        self.frame3_page.set('{0}/{1}'.format(self.frame3_current_page, len(self.frame3_store_data)))
+        m = folium.Map(location=[self.frame3_store_data[self.frame3_current_page - 1]['lat'], self.frame3_store_data[self.frame3_current_page - 1]['lon']], zoom_start=16)
+        # 마커 지정
+        folium.Marker([self.frame3_store_data[self.frame3_current_page - 1]['lat'], self.frame3_store_data[self.frame3_current_page - 1]['lon']], popup=self.frame3_store_data[self.frame3_current_page - 1]['name']).add_to(m)
+        # html 파일로 저장
+        m.save('map.html')
+        self.browser.Navigate('file:///map.html')
+
+    def opress_frame3_next(self):
+        if not self.frame3_store_data:
+            return
+        if self.frame3_current_page >= len(self.frame3_store_data):
+            return
+        self.frame3_current_page += 1
+
+        self.frame3_name.set('{0} ({1})'.format(self.frame3_store_data[self.frame3_current_page - 1]['name'], self.frame3_store_data[self.frame3_current_page - 1]['tel']))
+        self.frame3_page.set('{0}/{1}'.format(self.frame3_current_page, len(self.frame3_store_data)))
+        m = folium.Map(location=[self.frame3_store_data[self.frame3_current_page - 1]['lat'], self.frame3_store_data[self.frame3_current_page - 1]['lon']], zoom_start=16)
+        # 마커 지정
+        folium.Marker([self.frame3_store_data[self.frame3_current_page - 1]['lat'], self.frame3_store_data[self.frame3_current_page - 1]['lon']], popup=self.frame3_store_data[self.frame3_current_page - 1]['name']).add_to(m)
+        # html 파일로 저장
+        m.save('map.html')
+        self.browser.Navigate('file:///map.html')
+        
+    def onvalidate_frame3_city1(self, _):
+        city = self.frame3_city1.get()
+        pass
+
+
     def cef_thread(self, *arg):
+        sys.excepthook = cef.ExceptHook
         window_info = cef.WindowInfo(arg[0].winfo_id())
         window_info.SetAsChild(arg[0].winfo_id(), arg[1])
         cef.Initialize()
-        browser = cef.CreateBrowserSync(window_info, url='http://www.google.com')
+        self.browser = cef.CreateBrowserSync(window_info, url='about:blank')
         # browser.ExecuteJavascript('alert(1);');
         cef.MessageLoop()
 

@@ -2,6 +2,7 @@ import requests
 import re
 import json
 from bs4 import BeautifulSoup
+from urllib import parse
 
 class dhlotto:
     __get_recent_round_exp = re.compile(r'<option value="(\d+)" selected>\d+</option>')
@@ -45,5 +46,33 @@ class dhlotto:
             print(e)
             return None
 
+
+    def get_store(city1, city2):
+        data = {'searchType':'1', 'nowPage':'1', 'sltSIDO': parse.quote(city1), 'sltGUGUN': parse.quote(city2)}
+        headers = {'Content-Type': 'application/x-www-form-urlencoded'}
+        response = requests.post('https://www.dhlottery.co.kr/store.do?method=sellerInfo645Result', data=data, headers=headers)
+        res_data = json.loads(response.text)
+
+        total_page = res_data['totalPage']
+
+        ret = []
+        for x in res_data['arr']:
+            ret.append({'name': str(x['FIRMNM']).replace('&&#35;40;', '(').replace('&&#35;41;', ')'), 'lon': x['LONGITUDE'], 'lat': x['LATITUDE'], 'tel': x['RTLRSTRTELNO']})
+        for i in range(2, total_page+1):
+            data['nowPage'] = i
+            response = requests.post('https://www.dhlottery.co.kr/store.do?method=sellerInfo645Result', data=data, headers=headers)
+            res_data = json.loads(response.text)
+            for x in res_data['arr']:
+                ret.append({'name': str(x['FIRMNM']).replace('&&#35;40;', '(').replace('&&#35;41;', ')'), 'lon': x['LONGITUDE'], 'lat': x['LATITUDE'], 'tel': x['RTLRSTRTELNO']})
+        return ret
+
+    def get_frequency():
+        response = requests.get('https://www.dhlottery.co.kr/gameResult.do?method=statByNumber')
+        bs = BeautifulSoup(response.text, 'html.parser')
+        tbody = bs.select('#printTarget > tbody')[0]
+        tnums = tbody.select('td:nth-of-type(3)')
+
+        return [eval(x.text) for x in tnums]
+
 if __name__ == '__main__':
-    dhlotto.get_lotto_prize(964)
+    dhlotto.get_frequency()
