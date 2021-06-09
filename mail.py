@@ -7,7 +7,7 @@ s = smtplib.SMTP('smtp.gmail.com', 587)
 s.starttls()
 
 id = 'test.project.lotto@gmail.com'
-password = 'qhrrnjsqht!139'
+password = ''
 
 # 로그인 인증
 s.login(id, password)
